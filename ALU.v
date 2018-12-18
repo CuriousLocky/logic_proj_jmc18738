@@ -37,7 +37,7 @@ module ALU(
         output [15:0] result
     );
         always @(*) begin
-            {cout, result} <= {in1 + in2 + cin}
+            {cout, result} <= {in1 + in2 + cin};
         end
     endmodule
 
