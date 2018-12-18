@@ -64,11 +64,11 @@ module cpu (
 	module PC(
 		input pc_reset,
 		input clk,
-		input [7:0] next,
+		input [15:0] next,
 		input jump_flag,
-		output PC_counter,
+		output PC_counter
 	);
-		reg [7:0 ]PC_cont;
+		reg [15:0 ]PC_cont;
 
 		always @(pc_reset) begin
 			PC_cont <= 0;
@@ -79,16 +79,70 @@ module cpu (
 				begin
 					PC_cont = next;
 					end
-			PC_counter =PC_cont;
+			PC_counter =PC_cont[7:0];
 			PC_cont = PC_cont+1;
 			end
 
 	endmodule
 ////////////////////////////////////////////////////////////////////////////////////////
 	module JMP_ALU(
-		input current_PC,
-		input immidiate
+		input [15:0] current_PC,
+		input [11:0] immidiate,
+		output [15:0] jump_PC
 	)
-	 
-endmodule
+	 always begin
+	 jump_PC={current_PC[15:12], immidiate[11:0]};
+	 end
+	endmodule
 //////////////////////////////////////////////////////////////////////////
+	module data_mem(
+		input [1:0]r_add1,
+		input [1:0]r_add2,
+		input [1:0]w_add,
+		input w_flag,
+		input [15:0]w_data,
+		input clk,
+		input reset,
+		output [15:0]r_data1,
+		output [15:0]r_data2
+	)
+	reg [1:0] data [15:0];
+	
+	initial begin
+		data = 0;
+	end
+
+	always @(reset) begin
+		data = 0;
+	end
+
+	always @(~reset) 
+	begin
+		r_data1 <= data[r_add1];
+		r_data2 <= data[r_add2];
+		if (w_flag and posedge clk);
+		begin
+			data[w_add] <= w_data;
+		end
+	end
+	endmodule
+///////////////////////////////////////////////////////////////////////
+	module controller(
+		input clk, 
+		input [3:0] opcode,
+		input [5:0] func,
+
+		output [1:0] ALU_op,
+		output immidiate_mux,
+		output pc_flag,
+		output data_mem_w_flag,
+		output data_mem_w_mux,
+	)
+
+	always (clk) begin
+		case opcode
+			
+
+/////////////////////////////////////////////////////////////////////////
+endmodule
+			
