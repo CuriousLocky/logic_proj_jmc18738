@@ -22,7 +22,7 @@ module cpu (
   input [1:0] register_selection , // selects which register to show on output_port. It should only work when wwd is disabled
   output reg[`WORD_SIZE-1:0] num_inst,   // number of instruction during execution. !!!!!!! IMPORTANT!!! DISABLE!! this port when programming FPGA
 				    // You should enable num_inst port only for SIMULATION purposes.
-  output [`WORD_SIZE-1:0] output_port,   // this will be used to show values in registers in case of WWD or register_selection
+  output reg[`WORD_SIZE-1:0] output_port,   // this will be used to show values in registers in case of WWD or register_selection
   output [7:0] PC_below8bit                   // lower 8-bit of PC for LED output on output_logic.v. You need to assign lower 8bit of current PC to this port
 );
   ///////////////////////////////insturction memory//////////////////////////////////
@@ -66,7 +66,7 @@ module cpu (
 		input clk,
 		input [15:0] next,
 		input jump_flag,
-		output PC_counter
+		output reg PC_counter
 	);
 		reg [15:0 ]PC_cont;
 
@@ -89,11 +89,11 @@ module cpu (
 ////////////////////////////////////////////////////////////////////////////////////////
 	module JMP_ALU(
 		input [15:0] current_PC,
-		input [11:0] immidiate,
+		input [11:0] target,
 		output [15:0] jump_PC
 	);
 	 always begin
-	 jump_PC={current_PC[15:12], immidiate[11:0]};
+	 jump_PC={current_PC[15:12], target[11:0]};
 	 end
 	endmodule
 //////////////////////////////////////////////////////////////////////////
@@ -105,8 +105,8 @@ module cpu (
 		input [15:0]w_data,
 		input clk,
 		input reset,
-		output [15:0]r_data1,
-		output [15:0]r_data2
+		output reg [15:0]r_data1,
+		output reg [15:0]r_data2
 	);
 	reg [1:0] data [15:0];
 	
@@ -133,33 +133,27 @@ module cpu (
 		input clk, 
 		input [3:0] opcode,
 		input [5:0] func,
-		input reset,
 
-		output [1:0] ALU_op,
-		output immidiate_mux,
-		output pc_flag,
-		output data_mem_w_flag,
-		output data_mem_w_mux,
-		output output_port_flag,
-		output pc_reset,
-		output data_reset
+		output reg ALU_op,
+		output reg immidiate_mux,
+		output reg pc_flag,
+		output reg data_mem_w_flag,
+		output reg data_mem_w_mux,
+		output reg output_port_flag
 	);
 
-	assign pc_reset = reset;
-	assign data_reset = reset;
-
-	always @(posedge clk) begin
+	always @(*) begin
 		case(opcode)
 			4'd0: begin
-				case(func)
+				case(func):
 					6'd0:begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
 						pc_flag <= 0;
 						data_mem_w_flag <=1;
 						data_mem_w_mux <= 0;
-						output_port_flag <=0;
-						end
+						output_port_flag <=0
+						begin
 					default: begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
@@ -169,7 +163,6 @@ module cpu (
 						output_port_flag <=1;
 						end
 					endcase
-				end
 			4'd4: begin
 				ALU_op <= 0;
 				immidiate_mux <= 1;
@@ -198,8 +191,67 @@ module cpu (
 		end
 	endmodule
 
-
-
 /////////////////////////////////////////////////////////////////////////
+	module MUX2Bits(
+		input [1:0] inA, 
+		input [1:0] inB,
+		input selector,
+
+		output reg [1:0] result
+	);
+		initial begin
+			if(selector == 0)
+				result <=inA;
+			else
+				result <= inB;
+		end
+	endmodule
+/////////////////////////////////////////////////////////////////////////
+	wire PC_flag;
+	wire[15:0] PC_write;
+	wire[15:0] current_PC;
+	wire[3:0] opcode;
+	wire[5:0] func;
+	wire data_w_flag;
+	wire[1:0] data_w_add;
+	wire immidiate_mux_selector;
+	wire mem_w_mux_selector;
+	wire[15:0] data1;
+	wire[15:0] data2;
+	wire[15:0] inB,
+	wire ALU_op;
+	wire[15:0] ALU_in_2
+	wire[15:0] ALU_result;
+	wire[1:0] rs;
+	wire[1:0] rd;
+	wire[1:0] rt;
+	wire[1:0] mem_w_add;
+	wire [7:0] immidiate;
+	wire [11:0] target;
+	wire output_port_flag;
+
+	assign rs = memory[current_PC][11:10];
+	assign rt = memory[current_PC][9:8];
+	assign rd = memory[current_PC][7:6];
+	assign immidiate = memory[current_PC][7:0]
+	assign target = memory[curren_PC][11:0]
+	assign opcode = memory[current_PC][15:12]
+	assign func = memory[current_PC][5:1]
+	
+	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
+	JMP_ALU JUMP_ALU(current_PC, target, PC_write);
+	MUX2Bits rd_rt_selection(rd, rt,mem_w_mux_selector, mem_w_add);
+	data_mem datamem(rs, rt, data_w_add, data_2_flag, ALU_result, clk, reset_cpu, data1, data2);
+	MUX16Bits data2_selection(data2, {immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate}, immidiate_mux_selector, dataALU_in_2);
+	ALU ALU(data1, ALU_in_2, ALU_result);
+	controller controller(clk, opcode, func, ALU_op, immidiate_mux_selector, PC_flag, data_w_flag, mem_w_mux_selector, output_port_flag);
+
+	assign PC_below8bit = PC[7:0];
+
+	always @(wwd_enable)
+		if (output_port_flag)
+			output_port <= data1;
+		else
+			//I dont understand what our TA means so I left it blank
 endmodule
 			
