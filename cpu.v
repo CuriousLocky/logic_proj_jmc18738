@@ -151,15 +151,15 @@ module cpu (
 	always @(posedge clk) begin
 		case(opcode)
 			4'd0: begin
-				case(func):
+				case(func)
 					6'd0:begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
 						pc_flag <= 0;
 						data_mem_w_flag <=1;
 						data_mem_w_mux <= 0;
-						output_port_flag <=0
-						begin
+						output_port_flag <=0;
+						end
 					default: begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
@@ -169,6 +169,7 @@ module cpu (
 						output_port_flag <=1;
 						end
 					endcase
+				end
 			4'd4: begin
 				ALU_op <= 0;
 				immidiate_mux <= 1;
