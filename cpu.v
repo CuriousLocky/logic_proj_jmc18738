@@ -145,15 +145,15 @@ module cpu (
 	always @(*) begin
 		case(opcode)
 			4'd0: begin
-				case(func):
+				case(func)
 					6'd0:begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
 						pc_flag <= 0;
 						data_mem_w_flag <=1;
 						data_mem_w_mux <= 0;
-						output_port_flag <=0
-						begin
+						output_port_flag <=0;
+						end
 					default: begin
 						ALU_op <= 0;
 						immidiate_mux <= 0;
@@ -163,6 +163,7 @@ module cpu (
 						output_port_flag <=1;
 						end
 					endcase
+				end
 			4'd4: begin
 				ALU_op <= 0;
 				immidiate_mux <= 1;
@@ -218,9 +219,9 @@ module cpu (
 	wire mem_w_mux_selector;
 	wire[15:0] data1;
 	wire[15:0] data2;
-	wire[15:0] inB,
+	wire[15:0] inB;
 	wire ALU_op;
-	wire[15:0] ALU_in_2
+	wire[15:0] ALU_in_2;
 	wire[15:0] ALU_result;
 	wire[1:0] rs;
 	wire[1:0] rd;
@@ -233,10 +234,10 @@ module cpu (
 	assign rs = memory[current_PC][11:10];
 	assign rt = memory[current_PC][9:8];
 	assign rd = memory[current_PC][7:6];
-	assign immidiate = memory[current_PC][7:0]
-	assign target = memory[curren_PC][11:0]
-	assign opcode = memory[current_PC][15:12]
-	assign func = memory[current_PC][5:1]
+	assign immidiate = memory[current_PC][7:0];
+	assign target = memory[curren_PC][11:0];
+	assign opcode = memory[current_PC][15:12];
+	assign func = memory[current_PC][5:1];
 	
 	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
 	JMP_ALU JUMP_ALU(current_PC, target, PC_write);
