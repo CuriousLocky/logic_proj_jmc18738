@@ -80,7 +80,9 @@ module cpu (
 					PC_cont = next;
 					end
 			PC_counter =PC_cont[7:0];
-			PC_cont = PC_cont+1;
+			if (PC != 27) begin
+				PC_cont = PC_cont+1;
+				end
 			end
 
 	endmodule
@@ -89,7 +91,7 @@ module cpu (
 		input [15:0] current_PC,
 		input [11:0] immidiate,
 		output [15:0] jump_PC
-	)
+	);
 	 always begin
 	 jump_PC={current_PC[15:12], immidiate[11:0]};
 	 end
@@ -105,24 +107,24 @@ module cpu (
 		input reset,
 		output [15:0]r_data1,
 		output [15:0]r_data2
-	)
+	);
 	reg [1:0] data [15:0];
 	
 	initial begin
 		data = 0;
 	end
 
-	always @(reset) begin
-		data = 0;
-	end
-
-	always @(~reset) 
-	begin
-		r_data1 <= data[r_add1];
-		r_data2 <= data[r_add2];
-		if (w_flag and posedge clk);
-		begin
-			data[w_add] <= w_data;
+	always @(reset or posedge clk) begin
+		if(reset) begin
+			data = 0;
+		end
+		else begin
+			r_data1 <= data[r_add1];
+			r_data2 <= data[r_add2];
+			if (w_flag);
+			begin
+				data[w_add] <= w_data;
+			end
 		end
 	end
 	endmodule
@@ -131,17 +133,71 @@ module cpu (
 		input clk, 
 		input [3:0] opcode,
 		input [5:0] func,
+		input reset,
 
 		output [1:0] ALU_op,
 		output immidiate_mux,
 		output pc_flag,
 		output data_mem_w_flag,
 		output data_mem_w_mux,
-	)
+		output output_port_flag,
+		output pc_reset,
+		output data_reset
+	);
 
-	always (clk) begin
-		case opcode
-			
+	assign pc_reset = reset;
+	assign data_reset = reset;
+
+	always @(posedge clk) begin
+		case(opcode)
+			4'd0: begin
+				case(func):
+					6'd0:begin
+						ALU_op <= 0;
+						immidiate_mux <= 0;
+						pc_flag <= 0;
+						data_mem_w_flag <=1;
+						data_mem_w_mux <= 0;
+						output_port_flag <=0
+						begin
+					default: begin
+						ALU_op <= 0;
+						immidiate_mux <= 0;
+						pc_flag <= 0;
+						data_mem_w_flag <=0;
+						data_mem_w_mux <=0;
+						output_port_flag <=1;
+						end
+					endcase
+			4'd4: begin
+				ALU_op <= 0;
+				immidiate_mux <= 1;
+				pc_flag <= 0;
+				data_mem_w_flag <=1;
+				data_mem_w_mux <= 1;
+				output_port_flag <= 0;
+				end
+			4'd6: begin
+				ALU_op <= 1;
+				immidiate_mux <= 1;
+				pc_flag <= 0;
+				data_mem_w_flag <= 1;
+				data_mem_w_mux <= 1;
+				output_port_flag <= 0;
+				end
+			4'd9: begin
+				ALU_op <= 0;
+				immidiate_mux <= 0;
+				pc_flag <= 1;
+				data_mem_w_flag <=0;
+				data_mem_w_mux <= 0;
+				output_port_flag <= 0;
+				end
+			endcase
+		end
+	endmodule
+
+
 
 /////////////////////////////////////////////////////////////////////////
 endmodule
