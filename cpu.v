@@ -253,5 +253,7 @@ module cpu (
 			output_port <= data1;
 		else
 			//I dont understand what our TA means so I left it blank
+				//alright, I will take some time through it too..till morning probably.
+				//will check some gramma and see whether I can make it done XD
 endmodule
 			
