@@ -4,7 +4,7 @@ get inputs as code -> to selct what to do,
 first input, second input
 then finally get result
 */
-
+/*
 `include "opcodes.v"
 
 module ALU(
@@ -43,5 +43,18 @@ module ALU(
 
 
 endmodule
-
+*/
+module ALU(
+    input [15:0] inA,
+    input [15:0] inB,
+    input operation,
+    output [15:0] result
+    )
+    always @(*) begin
+        if (operation)
+            result={inB[7:0], 8'd0};
+        else
+            result = inA + inB;
+    end
+endmodule 
 
