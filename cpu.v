@@ -147,7 +147,7 @@ module cpu (
 
 	always @(*) begin
 		case(opcode)
-			4'd0: begin
+			4'd15: begin
 				case(func)
 					FUNC_ADD:begin
 						ALU_op <= 0;
