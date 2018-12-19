@@ -211,6 +211,22 @@ module cpu (
 		end
 	endmodule
 /////////////////////////////////////////////////////////////////////////
+	module MUX16Bits(
+		input [15:0] data1, data2,
+		input selector,
+
+		output [15:0] result
+	);
+		always @(*) begin
+			if(selector)
+				result <= data2;
+			else
+				result <= data1;
+  		end
+
+	endmodule
+
+////////////////////////////////////////////////////////////////////////
 	wire PC_flag;
 	wire[15:0] PC_write;
 	wire[15:0] current_PC;
@@ -243,7 +259,7 @@ module cpu (
 	assign func = memory[current_PC][5:1];
 	
 	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
-	JMP_ALU JUMP_ALU(current_PC, target, PC_write);
+	JMP_ALU jump_alu(current_PC, target, PC_write);
 	MUX2Bits rd_rt_selection(rd, rt,mem_w_mux_selector, mem_w_add);
 	data_mem datamem(rs, rt, data_w_add, data_2_flag, ALU_result, clk, reset_cpu, data1, data2);
 	MUX16Bits data2_selection(data2, {immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate}, immidiate_mux_selector, dataALU_in_2);
