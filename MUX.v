@@ -12,10 +12,11 @@ module MUX16Bits(
 
     output reg [15:0] result
 );
-    initial begin
-        if(selector == 0)
-            result <= inA;
-        else
-            result <= inB;
-    end
+
+	 always@(*) begin
+		 if(selector == 0)
+					result <= inA;
+			  else
+					result <= inB;
+		 end
 endmodule

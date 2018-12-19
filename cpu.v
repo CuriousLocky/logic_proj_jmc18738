@@ -30,11 +30,11 @@ module cpu (
     reg [`WORD_SIZE-1:0] memory [0:`MEMORY_SIZE-1]; //memory where instruction is saved
 	 always@(reset_cpu) begin
 	 if(reset_cpu == 1'b1) begin               // when reset, it will be initialized as below
-		memory[0]  <= 16'h6000;	//	LHI $0, 0
-		memory[1]  <= 16'h6101;	//	LHI $1, 1
-		memory[2]  <= 16'h6202;	//	LHI $2, 2
-		memory[3]  <= 16'h6303;	//	LHI $3, 3
-		memory[4]  <= 16'hf01c;	//	WWD $0
+		memory[0]  <= 16'h6000;	//	LHI $0, 0            ALU_result:0000
+		memory[1]  <= 16'h6101;	//	LHI $1, 1				ALU_rusult:0100
+		memory[2]  <= 16'h6202;	//	LHI $2, 2								0200
+		memory[3]  <= 16'h6303;	//	LHI $3, 3								0300
+		memory[4]  <= 16'hf01c;	//	WWD $0									
 		memory[5]  <= 16'hf41c;	//	WWD $1
 		memory[6]  <= 16'hf81c;	//	WWD $2
 		memory[7]  <= 16'hfc1c;	//	WWD $3
@@ -61,8 +61,6 @@ module cpu (
 	 end
 	 end
 ////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +93,10 @@ module cpu (
 	wire [7:0] immidiate;
 	wire [11:0] target;
 	wire output_port_flag;
+	wire debug;
+	wire ALU_update_flag;
+	wire mem_update_flag;
+
 
 	assign rs = memory[current_PC][11:10];
 	assign rt = memory[current_PC][9:8];
@@ -102,26 +104,26 @@ module cpu (
 	assign immidiate = memory[current_PC][7:0];
 	assign target = memory[current_PC][11:0];
 	assign opcode = memory[current_PC][15:12];
-	assign func = memory[current_PC][5:1];
+	assign func = memory[current_PC][5:0];
 	
 	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
 	JMP_ALU jump_alu(current_PC, target, PC_write);
 	MUX2Bits rd_rt_selection(rd, rt,mem_w_mux_selector, mem_w_add);
-	data_mem datamem(rs, rt, data_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2);
+	data_mem datamem(clk, rs, rt, data_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2, debug);
 	MUX16Bits data2_selection(data2, {immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate}, immidiate_mux_selector, ALU_in_2);
-	ALU ALU(data1, ALU_in_2, ALU_op, ALU_result);
-	controller controller(opcode, func, ALU_op, immidiate_mux_selector, PC_flag, data_w_flag, mem_w_mux_selector, output_port_flag);
+	ALU ALU(clk, data1, ALU_in_2, ALU_op, ALU_result, mem_update_flag);
+	controller controller(clk, opcode, func, ALU_op, immidiate_mux_selector, PC_flag, data_w_flag, mem_w_mux_selector, output_port_flag, ALU_update_flag);
 
 	assign PC_below8bit = current_PC[7:0];
 
-	always @(wwd_enable) begin
-		if (output_port_flag) begin
-				output_port <= data1;
-			end
-		else
-			begin
-				output_port <= 16'd0;
-			end
+	always @(*) begin
+	//	if (output_port_flag) begin
+		output_port <= data1;//{15'd0, ALU_update_flag};
+	//		end
+	//	else
+	//		begin
+	//			output_port <= ALU_result;
+	//		end
 	end
 			//I dont understand what our TA means so I left it blank
 				//alright, I will take some time through it too..till morning probably.

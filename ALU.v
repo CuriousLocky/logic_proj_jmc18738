@@ -45,16 +45,20 @@ module ALU(
 endmodule
 */
 module ALU(
+	 input clk,
     input [15:0] inA,
     input [15:0] inB,
     input operation,
-    output reg[15:0] result
+    output reg[15:0] result,
+	 output reg mem_update_flag
     );
     always @(*) begin
+		mem_update_flag = 0;
         if (operation)
             result={inB[7:0], 8'd0};
         else
-            result = inA + inB;
+            result = {inA + inB};
+		mem_update_flag = 1;
     end
 endmodule 
 

@@ -5,8 +5,9 @@
 
 		output reg [1:0] result
 	);
-		initial begin
-			if(selector == 0)
+
+		always @(*) begin
+		if(selector == 0)
 				result <=inA;
 			else
 				result <= inB;
