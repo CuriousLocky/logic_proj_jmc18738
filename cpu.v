@@ -70,17 +70,19 @@ module cpu (
 	);
 		reg [15:0 ]PC_cont;
 
-		always @(pc_reset) begin
-			PC_cont <= 0;
-			end
 
 		always @(posedge clk) begin
-			if (jump_flag)
-				begin
-					PC_cont = next;
+			if(pc_reset) begin
+				PC_cont <= 0;
+				end
+			else if (jump_flag) begin
+					parameter next_pc = 0;
+					next_pc = PC_cont +{{16{next[8]}}, next[8:0]};
+					if(next_pc > 27)
+						next_pc = 27;
+					PC_cont <= next_pc;
 					end
-			PC_counter =PC_cont[7:0];
-			if (PC != 27) begin
+			else if (PC_cont < 27) begin
 				PC_cont = PC_cont+1;
 				end
 			end
@@ -96,6 +98,7 @@ module cpu (
 	 jump_PC={current_PC[15:12], target[11:0]};
 	 end
 	endmodule
+	//what does jump_ALU do?
 //////////////////////////////////////////////////////////////////////////
 	module data_mem(
 		input [1:0]r_add1,
