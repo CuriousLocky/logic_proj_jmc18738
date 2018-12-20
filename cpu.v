@@ -93,8 +93,7 @@ module cpu (
 	wire[1:0] mem_w_add;
 	wire [7:0] immidiate;
 	wire [11:0] target;
-	wire output_port_flag;
-	wire debug;
+	wire output_port_flag;
 	wire ALU_update_flag;
 	wire mem_update_flag;
 
@@ -107,18 +106,18 @@ module cpu (
 	assign opcode = memory[current_PC][15:12];
 	assign func = memory[current_PC][5:0];
 	
-	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
+	PC PC(cpu_enable, reset_cpu, clk, PC_write, PC_flag, current_PC);
 	JMP_ALU jump_alu(current_PC, target, PC_write);
 	MUX2Bits rd_rt_selection(rd, rt,mem_w_mux_selector, mem_w_add);
-	data_mem datamem(clk, rs, rt, register_selection, mem_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2,rgs_data, debug);
+	data_mem datamem(clk, rs, rt, register_selection, mem_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2,rgs_data);
 	MUX16Bits data2_selection(data2, {immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate}, immidiate_mux_selector, ALU_in_2);
 	ALU ALU(clk, data1, ALU_in_2, ALU_op, ALU_result, mem_update_flag);
 	controller controller(clk, opcode, func, ALU_op, immidiate_mux_selector, PC_flag, data_w_flag, mem_w_mux_selector, output_port_flag, ALU_update_flag);
 
 	assign PC_below8bit = current_PC[7:0];
 
-	always @(*) begin
-		if (wwd_enable)
+	always @(wwd_enable) begin
+		if (output_port_flag)
 				output_port <= data1;//{15'd0, ALU_update_flag};
 		else
 				output_port <= rgs_data;

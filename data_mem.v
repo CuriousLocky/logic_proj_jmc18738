@@ -9,13 +9,11 @@
 		input reset,
 		output [15:0]r_data1,
 		output [15:0]r_data2,
-		output [15:0]rgsel_data,
-		output debug
+		output [15:0]rgsel_data
 	);
 	reg [15:0] data [3:0];
-	assign debug = data[0];
 	integer i;
-	always @(posedge clk) begin
+	always @(reset or posedge clk) begin
 		if(reset) 
 			for(i=0;i<4;i=i+1)
 				data[i] <= 0;

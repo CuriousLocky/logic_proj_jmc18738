@@ -1,4 +1,5 @@
 	module PC(
+		input cpu_enable,
 		input pc_reset,
 		input clk,
 		input [15:0] next,
@@ -10,7 +11,7 @@
 
 		//parameter next_pc = 0;
 		
-		always @(posedge clk) begin
+		always @(pc_reset or (cpu_enable and posedge clk)) begin
 			if(pc_reset) begin
 				PC_cont <= 0;
 				end
