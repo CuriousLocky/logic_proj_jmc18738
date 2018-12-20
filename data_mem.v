@@ -1,4 +1,5 @@
 	module data_mem(
+		input mem_update_flag,
 		input clk,
 		input [1:0]r_add1,
 		input [1:0]r_add2,
@@ -21,15 +22,15 @@
 	
 	always @(negedge clk) begin
 		if(reset) begin
-			data[0] <= 16'd0;
-			data [1] <= 16'd0;
-			data [2] <= 16'd0;
-			data [3] <= 16'd0;
+			data[0] = 16'd0;
+			data [1] = 16'd0;
+	      data [2] = 16'd0;
+			data [3] = 16'd0;
 		end
 		else
 		begin
 			if (w_flag) begin
-				data[w_add] <= w_data;
+				data[w_add] = w_data;
 			end
 		end
 	end

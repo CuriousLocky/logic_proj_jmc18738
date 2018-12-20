@@ -22,7 +22,7 @@
 						immidiate_mux = 0;
 						pc_flag = 0;
 						data_mem_w_flag =1;
-						data_mem_w_mux = 0;
+						data_mem_w_mux = 0; // 0 means rd
 						output_port_flag =0;
 						end
 					default: begin
