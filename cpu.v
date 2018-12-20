@@ -38,7 +38,7 @@ module cpu (
 		memory[5]  <= 16'hf41c;	//	WWD $1
 		memory[6]  <= 16'hf81c;	//	WWD $2
 		memory[7]  <= 16'hfc1c;	//	WWD $3
-		memory[8]  <= 16'h4204;	//	ADI $2, $0, 4
+		memory[8]  <= 16'h4204;	//	ADI $2, $0, 4 h4204
 		memory[9]  <= 16'h47fc;	//	ADI $3, $1, -4
 		memory[10] <= 16'hf81c;	//	WWD $2
 		memory[11] <= 16'hfc1c;	//	WWD $3
@@ -82,6 +82,7 @@ module cpu (
 	wire mem_w_mux_selector;
 	wire[15:0] data1;
 	wire[15:0] data2;
+	wire[15:0] register_selected;
 	wire[15:0] inB;
 	wire ALU_op;
 	wire[15:0] ALU_in_2;
@@ -89,6 +90,7 @@ module cpu (
 	wire[1:0] rs;
 	wire[1:0] rd;
 	wire[1:0] rt;
+	wire[1:0] reg_sel;
 	wire[1:0] mem_w_add;
 	wire [7:0] immidiate;
 	wire [11:0] target;
@@ -101,6 +103,7 @@ module cpu (
 	assign rs = memory[current_PC][11:10];
 	assign rt = memory[current_PC][9:8];
 	assign rd = memory[current_PC][7:6];
+	assign reg_sel = memory[current_PC][register_selection];
 	assign immidiate = memory[current_PC][7:0];
 	assign target = memory[current_PC][11:0];
 	assign opcode = memory[current_PC][15:12];
@@ -109,21 +112,21 @@ module cpu (
 	PC PC(reset_cpu, clk, PC_write, PC_flag, current_PC);
 	JMP_ALU jump_alu(current_PC, target, PC_write);
 	MUX2Bits rd_rt_selection(rd, rt,mem_w_mux_selector, mem_w_add);
-	data_mem datamem(clk, rs, rt, data_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2, debug);
 	MUX16Bits data2_selection(data2, {immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate[7], immidiate}, immidiate_mux_selector, ALU_in_2);
 	ALU ALU(clk, data1, ALU_in_2, ALU_op, ALU_result, mem_update_flag);
+	data_mem datamem(clk, rs, rt,reg_sel, mem_w_add, data_w_flag, ALU_result, reset_cpu, data1, data2,register_selected, debug);
 	controller controller(clk, opcode, func, ALU_op, immidiate_mux_selector, PC_flag, data_w_flag, mem_w_mux_selector, output_port_flag, ALU_update_flag);
 
 	assign PC_below8bit = current_PC[7:0];
 
 	always @(*) begin
-	//	if (output_port_flag) begin
-		output_port <= data1;//{15'd0, ALU_update_flag};
-	//		end
-	//	else
-	//		begin
-	//			output_port <= ALU_result;
-	//		end
+		if (output_port_flag) begin
+				output_port <= data1;//{15'd0, ALU_update_flag};
+			end
+		else
+			begin
+				output_port <= ALU_result;
+			end
 	end
 			//I dont understand what our TA means so I left it blank
 				//alright, I will take some time through it too..till morning probably.
