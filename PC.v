@@ -35,8 +35,8 @@
 					PC_cont <= next;
 					end
 				else begin
-					if (PC_cont == 2) begin
-						PC_cont <= 2;
+					if (PC_cont == 27) begin
+						PC_cont <= 27;
 						end
 					else begin
 					PC_cont <= PC_cont + 1;

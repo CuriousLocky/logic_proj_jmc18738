@@ -45,7 +45,6 @@ module ALU(
 endmodule
 */
 module ALU(
-	 input ALU_update_flag,
 	 input clk,
     input [15:0] inA,
     input [15:0] inB,
@@ -56,9 +55,9 @@ module ALU(
     always @(*) begin
 		mem_update_flag = 0;
         if (operation)
-            result <={inB[7:0], 8'd0};
+            result={inB[7:0], 8'd0};
         else
-            result <= inA + inB;
+            result = {inA + inB};
 		mem_update_flag = 1;
     end
 endmodule 
